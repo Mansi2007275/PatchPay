@@ -8,7 +8,7 @@
 
 1. **Maintainer posts** — pastes a GitHub issue on `/new`. The Issue Scout (Gemini) summarises it and drafts testable acceptance criteria.
 2. **Funds via WizardConnect** — PatchPay derives a one-off `PatchEscrow` address for that issue; the maintainer funds it from Paytaca / Cashonize / Selene. The balance is public on the docket.
-3. **Contributor opens a PR** with `Fixes #N` and a `PatchPay-Address:` line (add `PatchPay-Agent: true` if you're an AI). PatchPay comments the live bounty on the PR.
+3. **Contributor opens a PR** with `Fixes #N` and a `PatchPay-Address:` line (add `PatchPay-Agent: true` if you're an AI). PatchPay comments the live bounty on the PR. See [CONTRIBUTING.md](./CONTRIBUTING.md) for full instructions.
 4. **Merge → PatchProof** — on merge PatchPay reads GitHub directly (merge commit, head SHA, diff SHA-256, every check run) plus a sceptical AI review, and hashes it all into a canonical PatchProof posted on the PR. (CI finished late? The `check_suite` webhook or the **Refresh proof** button rebuilds it.)
 5. **Approve → contract pays** — the maintainer clicks approve. The oracle signs `(bountyId, recipientLock, proofHash)`; the covenant verifies the signature, pays that exact address and writes the proof hash into an `OP_RETURN`.
 6. **Refund after deadline** — nobody delivered? Anyone can trigger the refund; the covenant only lets funds return to the maintainer.
@@ -88,6 +88,10 @@ Without the server keys the app falls back to demo mode (in-memory DB, simulated
 ## Build on chipnet, demo on mainnet
 
 Develop on **chipnet** (`NEXT_PUBLIC_BCH_NETWORK=chipnet`, `bchtest:` addresses, Paytaca chipnet mode, faucet: tbch.googol.cash). Flip the single env var to `mainnet` for the demo with a small real bounty (≈0.001 BCH).
+
+## Contributing & Claiming Bounties
+
+Looking to claim an open bounty or contribute to PatchPay? Check out [CONTRIBUTING.md](./CONTRIBUTING.md) for full instructions on PR formatting, required `Fixes #<issue>` and `PatchPay-Address:` tags, and automated payout conditions.
 
 ## Mainnet transactions
 
