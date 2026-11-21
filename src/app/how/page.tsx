@@ -19,6 +19,17 @@ export default function How() {
           </li>
         ))}
       </ol>
+      <h2 className="text-2xl font-medium mt-12 border-b-2 border-ink pb-1">When does a PR get paid?</h2>
+      <ul className="mt-4 space-y-2 text-ink-2 list-disc pl-5">
+        <li>The PR is merged.</li>
+        <li>A maintainer other than the PR author merged it.</li>
+        <li>Every required CI check is green.</li>
+        <li>The PR includes a valid payout address.</li>
+        <li>The AI review says the acceptance criteria are met.</li>
+        <li>No AI-slop signals are found.</li>
+        <li>The payout has been sent.</li>
+      </ul>
+      <p className="text-ink-2 mt-4">If an automatic check fails, payout waits for a maintainer to review it. A failed AI check does not block payment forever: a maintainer can still approve the payout manually.</p>
       <h2 className="text-2xl font-medium mt-12 border-b-2 border-ink pb-1">Trust model, plainly</h2>
       <ul className="mt-4 space-y-2 text-ink-2 list-disc pl-5">
         <li>The contract cannot pay anyone the oracle did not sign for, and cannot be refunded to anyone but the maintainer.</li>
