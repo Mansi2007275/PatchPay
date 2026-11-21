@@ -1,13 +1,14 @@
 import { connection } from 'next/server';
 import Link from 'next/link';
 import { db } from '@/lib/db/supabase';
-import { EXPLORER_TX } from '@/lib/bch/network';
+import { EXPLORER_TX, NETWORK } from '@/lib/bch/network';
 import type { PatchProof } from '@/lib/patchproof/proof';
 import { getUsdPerBch } from '@/lib/price';
 import { Usd } from '@/components/Usd';
 
 type ProofRow = { id: string; bounty_id: string; pr_number: number; proof: PatchProof; proof_hash: string; checks_green: boolean; status: string; created_at: string };
 type PaymentRow = { id: string; proof_id: string | null; kind: string; txid: string; amount_sats: number | null; recipient: string | null };
+type BountyRow = { id: string; network: string };
 
 const toBch = (sats: number) => (sats / 1e8).toFixed(5);
 
@@ -15,16 +16,26 @@ export default async function ContributorProfile({ params }: { params: Promise<{
   await connection();
   const { login } = await params;
 
-  // Pull proofs and release payments, then match on the contributor login in JS
-  // (works whether the backend is Supabase jsonb or the local mock store).
-  const [{ data: proofData }, { data: payData }, usd] = await Promise.all([
+  // Pull proofs, release payments, and bounties, then match on the contributor login in JS
+  // and filter by the active network (works whether the backend is Supabase jsonb or the local mock store).
+  const [{ data: proofData }, { data: payData }, { data: bountyData }, usd] = await Promise.all([
     db().from('proofs').select('*').order('created_at', { ascending: false }).limit(500),
     db().from('payments').select('*').eq('kind', 'release').limit(1000),
+    db().from('bounties').select('id, network'),
     getUsdPerBch(),
   ]);
 
+  const bounties = (bountyData as BountyRow[] | null) ?? [];
+  const bountyNetworkMap = new Map<string, string>();
+  for (const b of bounties) {
+    bountyNetworkMap.set(b.id, b.network);
+  }
+
   const allProofs = (proofData as ProofRow[] | null) ?? [];
-  const mine = allProofs.filter((p) => p.proof?.contributor?.github?.toLowerCase() === login.toLowerCase());
+  const networkProofs = allProofs.filter(
+    (p) => (bountyNetworkMap.get(p.bounty_id) ?? (p.proof?.bounty?.id ? bountyNetworkMap.get(p.proof.bounty.id) : null)) === NETWORK
+  );
+  const mine = networkProofs.filter((p) => p.proof?.contributor?.github?.toLowerCase() === login.toLowerCase());
   const releases = (payData as PaymentRow[] | null) ?? [];
 
   const myProofIds = new Set(mine.map((p) => p.id));
@@ -45,7 +56,10 @@ export default async function ContributorProfile({ params }: { params: Promise<{
       <a className="ink-link mono text-sm" href={`https://github.com/${login}`}>github.com/{login}</a>
 
       <div className="receipt mono text-[13px] mt-6 max-w-sm">
-        <div className="flex justify-between"><span>TOTAL EARNED</span><span className="font-bold text-right">{toBch(totalSats)} BCH<Usd sats={totalSats} rate={usd} block /></span></div>
+        <div className="flex justify-between">
+          <span>TOTAL EARNED <span className="text-xs text-ink-2 font-normal">on {NETWORK}</span></span>
+          <span className="font-bold text-right">{toBch(totalSats)} BCH<Usd sats={totalSats} rate={usd} block /></span>
+        </div>
         <div className="border-t border-dashed rule my-2" />
         <div className="flex justify-between py-0.5"><span>bounties claimed</span><span className="font-bold">{mine.length}</span></div>
         <div className="flex justify-between py-0.5"><span>paid out</span><span className="font-bold">{paidCount}</span></div>
