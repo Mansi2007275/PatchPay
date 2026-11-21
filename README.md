@@ -29,6 +29,16 @@ With no Supabase/GitHub keys the app runs on a seeded in-memory store and a `dem
 4. Open a PatchProof (`/proof/<hash>`) → click **Verify in my browser** to re-hash it with WebCrypto.
 5. Visit **`/dev/log`** to tail the event audit trail.
 
+## README badge
+
+Show contributors the real BCH backing open bounties on your repository:
+
+```markdown
+[![PatchPay](https://patchpay-six.vercel.app/badge/OWNER/REPO)](https://patchpay-six.vercel.app/r/OWNER/REPO)
+```
+
+The badge displays the total BCH committed to open bounties on that repo (cached 5 minutes). You can also copy this snippet directly from your repository's rate-card page at `/r/<owner>/<repo>`.
+
 ## The contract, line by line — `contracts/PatchEscrow.cash`
 
 Constructor params: `bytes32 bountyId` (sha256 of the bounty UUID), `pubkey oraclePk`, `bytes maintainerLock` (refund target), `int deadline`.
