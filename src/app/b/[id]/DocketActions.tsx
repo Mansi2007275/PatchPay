@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/components/Providers';
 import { fundEscrow } from '@/lib/bch/funding';
@@ -13,6 +13,17 @@ export function DocketActions(props: Props) {
   const router = useRouter();
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [totalSats, setTotalSats] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (props.kind !== 'sync') return;
+    const onSynced = (e: Event) => {
+      const j = (e as CustomEvent<{ totalSats?: string | number }>).detail;
+      if (j?.totalSats != null) setTotalSats(Number(j.totalSats));
+    };
+    window.addEventListener('patchpay:synced', onSynced);
+    return () => window.removeEventListener('patchpay:synced', onSynced);
+  }, [props.kind]);
 
   const call = async (url: string, label: string) => {
     setBusy(true);
@@ -20,6 +31,10 @@ export function DocketActions(props: Props) {
     try {
       const r = await authFetch(url, { method: 'POST' });
       const j = await r.json().catch(() => ({}));
+      if (r.ok && j?.totalSats != null) {
+        setTotalSats(Number(j.totalSats));
+        window.dispatchEvent(new CustomEvent('patchpay:synced', { detail: j }));
+      }
       setMsg(r.ok ? 'Done.' : typeof j.error === 'string' ? j.error : 'Something went wrong. Please try again.');
       router.refresh();
     } catch {
@@ -67,7 +82,11 @@ export function DocketActions(props: Props) {
       )}
       <button className="btn !text-[11px]" disabled={busy} onClick={() => call(`/api/bounties/${props.bountyId}/sync`, 'Reading chain…')}>Re-check chain</button>
       {pastDeadline && !['paid', 'refunded'].includes(props.status) && (
-        <button className="btn !text-[11px]" disabled={busy} onClick={() => call(`/api/bounties/${props.bountyId}/refund`, 'Refunding…')}>Trigger refund</button>
+        (totalSats !== null ? totalSats > 0 : props.status !== 'awaiting_funds' && props.amountSats > 0) ? (
+          <button className="btn !text-[11px]" disabled={busy} onClick={() => call(`/api/bounties/${props.bountyId}/refund`, 'Refunding…')}>Trigger refund</button>
+        ) : (
+          <span className="mono text-xs text-ink-2">Deadline passed — nothing to refund.</span>
+        )
       )}
       {msg && <p className="mono text-xs w-full break-all select-all" role="status">{msg}</p>}
     </div>
