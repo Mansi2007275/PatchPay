@@ -55,6 +55,7 @@ export function EscrowLive({ bountyId, escrow, amountSats, funded, backers: init
           setLive({ totalSats: String(j.totalSats ?? '0'), funded: Boolean(j.funded) });
           if (typeof j.backers === 'number') setBackers(j.backers);
           setState('done');
+          window.dispatchEvent(new CustomEvent('patchpay:synced', { detail: j }));
           // If funding status just flipped, refresh the server component once.
           if (!closed && Boolean(j.funded) !== funded) router.refresh();
         } else {
