@@ -32,7 +32,18 @@ export default async function ProofPage({ params }: { params: Promise<{ hash: st
           <span>checks</span><span>{proof.checks.map((c) => `${c.name}:${c.conclusion}`).join(', ') || 'none'}</span>
           <span>AI review</span><span>{proof.review.score}/100 · criteria met {String(proof.review.criteriaMet)} · {proof.review.model}</span>
           <span>amount</span><span>{(Number(proof.bounty.amountSats) / 1e8).toFixed(5)} BCH<Usd sats={Number(proof.bounty.amountSats)} rate={usd} /></span>
-          <span>payout tx</span><span>{(pays ?? []).filter((p) => p.kind === 'release').map((p) => <a key={p.txid} className="ink-link block" href={EXPLORER_TX(p.txid)}>{p.txid.slice(0, 24)}…</a>)}</span>
+          <span>payout tx</span>
+          <span className="space-y-1">
+            {(pays ?? []).filter((p) => p.kind === 'release').length === 0 && <span className="text-ink-2">—</span>}
+            {(pays ?? []).filter((p) => p.kind === 'release').map((p) => (
+              <a key={p.txid} className="ink-link block break-words [overflow-wrap:anywhere]" href={EXPLORER_TX(p.txid)}>
+                {p.amount_sats ? `${(Number(p.amount_sats) / 1e8).toFixed(5)} BCH` : ''}
+                {p.amount_sats ? <Usd sats={Number(p.amount_sats)} rate={usd} /> : null}
+                {p.amount_sats ? ' · ' : ''}
+                {p.txid.slice(0, 12)}…
+              </a>
+            ))}
+          </span>
         </div>
         <div className="border-t border-dashed rule my-4" />
         <p className="label">proof hash (sha256 of canonical JSON, also in the payout OP_RETURN after the 4-byte PPPF prefix)</p>
