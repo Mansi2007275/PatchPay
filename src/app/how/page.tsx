@@ -27,8 +27,8 @@ export default function How() {
         <li>The PR includes a valid payout address.</li>
         <li>The AI review says the acceptance criteria are met.</li>
         <li>No AI-slop signals are found.</li>
-        <li>The payout has been sent.</li>
       </ul>
+      <p className="text-ink-2 mt-4">When every condition passes, the contract pays the contributor automatically on merge and writes the PatchProof hash into the payout transaction.</p>
       <p className="text-ink-2 mt-4">If an automatic check fails, payout waits for a maintainer to review it. A failed AI check does not block payment forever: a maintainer can still approve the payout manually.</p>
       <h2 className="text-2xl font-medium mt-12 border-b-2 border-ink pb-1">Trust model, plainly</h2>
       <ul className="mt-4 space-y-2 text-ink-2 list-disc pl-5">
