@@ -13,6 +13,14 @@
 5. **Merge = approval → contract pays** — when the merged PR has green CI, a valid payout address, an AI review that finds the criteria met, and was merged by a maintainer who is not its author, the oracle signs `(bountyId, recipientLock, proofHash)` automatically; the covenant verifies the signature, pays that exact address and writes the proof hash into an `OP_RETURN`. If any condition fails, the PR comment says why and a maintainer can approve manually. (`AUTO_PAYOUT_ON_MERGE=0` turns auto-pay off.)
 6. **Refund after deadline** — nobody delivered? Anyone can trigger the refund; the covenant only lets funds return to the maintainer.
 
+## Wallets
+
+PatchPay uses [WizardConnect](https://github.com/mr-zinc/wizard-connect) for one-click funding, but any Bitcoin Cash wallet can fund an escrow:
+
+- **Supported WizardConnect wallets:** Paytaca app, Cashonize (v0.9+), and Selene. Note that browser extension wallets cannot scan the on-screen QR code.
+- **Universal fallback:** Send directly to the escrow address from your wallet's standard Send screen, then click **"I've sent it"**.
+- **Chipnet vs Mainnet:** Test using chipnet test coins (faucet: [tbch.googol.cash](https://tbch.googol.cash)) before deploying with real mainnet BCH.
+
 ## Try it in 2 minutes (local, no keys)
 
 ```bash
