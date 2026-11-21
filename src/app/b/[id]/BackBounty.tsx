@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
 import { useApp } from '@/components/Providers';
@@ -38,6 +38,13 @@ export function BackBounty({ bountyId, escrow, usdPerBch = null }: { bountyId: s
   // BIP21-style payment URI: phone wallets pre-fill the amount when scanning.
   const payUri = valid ? `${escrow}?amount=${bchString(sats)}` : escrow;
   const [qr, setQr] = useState<string | null>(null);
+  const successHeadingRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    if (txid) {
+      successHeadingRef.current?.focus();
+    }
+  }, [txid]);
 
   useEffect(() => {
     if (connected) return;
@@ -89,7 +96,10 @@ export function BackBounty({ bountyId, escrow, usdPerBch = null }: { bountyId: s
   if (txid) {
     return (
       <div id="back" className="receipt mono text-[13px] relative">
-        <div className="flex justify-between"><span>BACKED</span><span className="font-bold">on-chain ✓</span></div>
+        <div className="flex justify-between">
+          <span ref={successHeadingRef} tabIndex={-1} role="status" aria-live="polite" className="outline-none">BACKED</span>
+          <span className="font-bold">on-chain ✓</span>
+        </div>
         <div className="border-t border-dashed rule my-2" />
         <p className="text-xs">Your BCH is now locked for whoever fixes this issue.</p>
         <a className="ink-link text-xs break-all block mt-2" href={EXPLORER_TX(txid)} target="_blank" rel="noreferrer">tx {txid}</a>
@@ -150,8 +160,8 @@ export function BackBounty({ bountyId, escrow, usdPerBch = null }: { bountyId: s
           </p>
         </>
       )}
-      {busy && <p className="text-xs mt-2">{busy}</p>}
-      {err && <p className="text-xs mt-2 text-del break-all select-all">{err}</p>}
+      {busy && <p className="text-xs mt-2" role="status" aria-live="polite">{busy}</p>}
+      {err && <p className="text-xs mt-2 text-del break-all select-all" role="alert" aria-live="assertive">{err}</p>}
     </div>
   );
 }
